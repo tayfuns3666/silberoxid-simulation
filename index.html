@@ -30,7 +30,7 @@
 *{box-sizing:border-box}
 html,body{background:var(--page);color:var(--ink)}
 body{font-family:var(--f-body);font-size:16px;line-height:1.5}
-.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1320px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 
 /* Kopf */
 .top{background:var(--panel);border-bottom:1px solid var(--line)}
@@ -47,7 +47,7 @@ h1{font-family:var(--f-display);font-weight:600;font-size:clamp(22px,2.6vw,28px)
 .steps li.done .n{background:#cfe3d6;color:#1f5a35}
 
 /* Hauptbereich */
-.layout{max-width:1180px;padding-block:20px 32px}
+.layout{max-width:1320px;padding-block:20px 32px}
 .stagecard{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;min-width:0}
 .stagebar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line)}
 .stagebar h2{font-family:var(--f-display);font-weight:500;font-size:18px;margin:0}
@@ -76,17 +76,22 @@ button:focus-visible,[role="button"]:focus-visible{outline:3px solid #f2a33a;out
 .chip{display:inline-flex;gap:6px;align-items:baseline;padding:5px 11px;border-radius:8px;background:var(--page);font-size:14px;color:var(--muted)}
 .chip b{color:var(--ink);font-variant-numeric:tabular-nums;font-weight:700}
 
-/* Beobachtungsauftrag */
-.obs{border:1.5px solid var(--ember);border-radius:12px;padding:12px 16px 12px;display:grid;gap:6px;background:var(--panel)}
-.obs-head{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
-.obs-tag{display:inline-flex;align-items:center;gap:7px;font-family:var(--f-display);font-weight:500;font-size:14px;color:var(--ember)}
-.obs-tag svg{flex:none}
-.obs-note{font-size:13.5px;color:var(--muted);margin-left:auto;background:var(--ember-soft);padding:2px 9px;border-radius:6px}
-.obs-text{margin:0;font-size:18px;line-height:1.45;font-weight:700;color:var(--ink);text-wrap:pretty}
-.obs-tip{margin:0;font-size:14px;color:var(--muted)}
-.obs.done{border-color:#2e7d50}
-.obs.done .obs-tag{color:#2e7d50}
-.obs.done .obs-note{display:none}
+/* Aufgaben */
+.stagebody{display:grid;grid-template-columns:minmax(0,1fr) 320px}
+.stagemain{min-width:0}
+.tasks{border-left:1px solid var(--line);padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.tasks-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.tasks h2{font-family:var(--f-display);font-weight:600;font-size:18px;margin:0}
+.tasks-note{font-size:13.5px;color:var(--ember);background:var(--ember-soft);padding:2px 9px;border-radius:6px;white-space:nowrap}
+.tasklist{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.task{display:grid;gap:4px;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;font-size:15.5px;line-height:1.4;transition:border-color .2s,background .2s}
+.task-label{font-family:var(--f-display);font-weight:600;font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:var(--accent)}
+.task.now{border-color:var(--ember);background:var(--ember-soft)}
+.task.now .task-label{color:var(--ember)}
+@media (max-width:980px){
+  .stagebody{grid-template-columns:minmax(0,1fr)}
+  .tasks{border-left:0;border-top:1px solid var(--line)}
+}
 /* SVG-Zustände */
 #flame{transition:opacity .3s}
 #flame.off{opacity:0}
@@ -183,6 +188,8 @@ button:focus-visible,[role="button"]:focus-visible{outline:3px solid #f2a33a;out
       </div>
     </div>
 
+    <div class="stagebody">
+    <div class="stagemain">
     <div class="scene">
       <!-- ============ VERSUCHSAUFBAU ============ -->
       <svg id="lab" class="view" viewBox="0 0 1000 560" role="img" aria-label="Versuchsaufbau: Reagenzglas mit Silberoxid über dem Brenner, Gasableitungsrohr in eine Wanne mit Wasser und ein Auffangglas">
@@ -218,8 +225,9 @@ button:focus-visible,[role="button"]:focus-visible{outline:3px solid #f2a33a;out
         </g>
 
         <!-- Wasser in der Wanne -->
-        <rect x="603" y="330" width="344" height="137" fill="url(#gWater)"/>
-        <line x1="603" y1="330" x2="947" y2="330" stroke="#79a9c3" stroke-width="2"/>
+        <rect id="trWater" x="603" y="330" width="344" height="137" fill="url(#gWater)"/>
+        <line id="trLine" x1="603" y1="330" x2="947" y2="330" stroke="#79a9c3" stroke-width="2"/>
+        <line x1="589" y1="330" x2="606" y2="330" stroke="#3d464c" stroke-width="2.5" stroke-linecap="round"/>
 
         <!-- Auffangglas -->
         <g id="ct" transform="translate(872,0)">
@@ -400,14 +408,6 @@ button:focus-visible,[role="button"]:focus-visible{outline:3px solid #f2a33a;out
     </div>
 
     <div class="console">
-      <div class="obs" id="obs" aria-live="polite">
-        <div class="obs-head">
-          <span class="obs-tag"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M11.5 1.5 L14.5 4.5 L5 14 L1.5 14.5 L2 11 Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg><span id="obsLabel">Beobachtungsauftrag 1 von 5</span></span>
-          <span class="obs-note">in OneNote notieren</span>
-        </div>
-        <p class="obs-text" id="obsText"></p>
-        <p class="obs-tip" id="obsTip">Schreibe nur auf, was du siehst. Die Erklärung folgt später.</p>
-      </div>
       <div id="alert" class="alert" role="alert" hidden></div>
       <p id="hint" class="hint" aria-live="polite"></p>
       <div class="actions">
@@ -437,6 +437,21 @@ button:focus-visible,[role="button"]:focus-visible{outline:3px solid #f2a33a;out
         <span class="chip">Masse vorher <b id="rBefore">–</b></span>
         <span class="chip">Masse nachher <b id="rAfter">–</b></span>
       </div>
+    </div>
+    </div>
+    <aside class="tasks" aria-label="Aufgaben">
+      <div class="tasks-head">
+        <h2>Aufgaben</h2>
+        <span class="tasks-note">in OneNote</span>
+      </div>
+      <ol class="tasklist">
+        <li class="task" data-task="1"><span class="task-label">Aufgabe 1</span><span>Beschreibe den Ausgangsstoff im Reagenzglas: Farbe und Aussehen. Notiere die Masse vor dem Versuch.</span></li>
+        <li class="task" data-task="2"><span class="task-label">Aufgabe 2</span><span>Beschreibe, was beim Erhitzen im Reagenzglas, in der Wanne und im Auffangglas passiert.</span></li>
+        <li class="task" data-task="3"><span class="task-label">Aufgabe 3</span><span>Notiere die Schritte, mit denen du den Versuch beendest, in der richtigen Reihenfolge.</span></li>
+        <li class="task" data-task="4"><span class="task-label">Aufgabe 4</span><span>Beschreibe, wie sich der glimmende Holzspan im Glas mit Luft und im Glas mit dem aufgefangenen Gas verhält. Vergleiche.</span></li>
+        <li class="task" data-task="5"><span class="task-label">Aufgabe 5</span><span>Vergleiche Ausgangsstoff und Rückstand vor und nach dem Reiben. Notiere die Masse nach dem Versuch.</span></li>
+      </ol>
+    </aside>
     </div>
   </section>
 
@@ -559,25 +574,18 @@ button:focus-visible,[role="button"]:focus-visible{outline:3px solid #f2a33a;out
     }
     if (!st.weighedAfter) return 'Wiege zuerst das abgekühlte Reagenzglas mit dem Rückstand.';
     if (!st.rubbedStart || !st.rubbedRes) return 'Reibe beide Proben kräftig mit dem Spatel und vergleiche sie. Du kannst auch direkt auf ein Uhrglas tippen.';
-    return 'Alle Untersuchungen sind erledigt. Du kannst den Versuch mit „Neu starten“ wiederholen.';
+    return 'Alle Untersuchungen sind erledigt. Bearbeite jetzt das Arbeitsblatt.';
   }
 
-  const OBS = {
-    1:'Beschreibe den Ausgangsstoff im Reagenzglas: Farbe und Aussehen. Notiere die Masse vor dem Versuch.',
-    2:'Beschreibe, was beim Erhitzen im Reagenzglas, in der Wanne und im Auffangglas passiert.',
-    3:'Notiere die Schritte, mit denen du den Versuch beendest, in der richtigen Reihenfolge.',
-    4:'Beschreibe, wie sich der glimmende Holzspan im Glas mit Luft und im Glas mit dem aufgefangenen Gas verhält. Vergleiche.',
-    5:'Vergleiche Ausgangsstoff und Rückstand: Wie sehen sie vor und nach dem Reiben aus? Notiere die Masse nach dem Versuch.'
-  };
   function obsTask(){
-    if (st.rubbedStart && st.rubbedRes && st.weighedAfter) return [null, 'Bearbeite jetzt das Arbeitsblatt zur Auswertung.'];
+    if (st.rubbedStart && st.rubbedRes && st.weighedAfter) return null;
     let n;
     if (st.view === 'residue') n = 5;
     else if (st.view === 'glimm' || st.closed) n = 4;
     else if (st.reactionDone) n = 3;
     else if (st.burner || st.simTime > 0) n = 2;
     else n = 1;
-    return [n, OBS[n]];
+    return n;
   }
 
   function render(){
@@ -621,11 +629,12 @@ button:focus-visible,[role="button"]:focus-visible{outline:3px solid #f2a33a;out
       li.classList.toggle('active', i+1 === p);
       li.classList.toggle('done', i+1 < p || (p === 5 && st.rubbedRes && i === 4));
     });
-    const [num, text] = obsTask();
-    $('obs').classList.toggle('done', num === null);
-    $('obsLabel').textContent = num === null ? 'Alle Beobachtungen notiert' : `Beobachtungsauftrag ${num} von 5`;
-    $('obsText').textContent = text;
-    $('obsTip').hidden = num === null;
+    const cur = obsTask();
+    document.querySelectorAll('.task').forEach(t => {
+      const on = +t.dataset.task === cur;
+      t.classList.toggle('now', on);
+      if (on) t.setAttribute('aria-current','step'); else t.removeAttribute('aria-current');
+    });
   }
 
   function setAlert(html){ const a = $('alert'); if (html){ a.innerHTML = html; a.hidden = false; } else { a.hidden = true; a.innerHTML = ''; } }
@@ -641,10 +650,16 @@ button:focus-visible,[role="button"]:focus-visible{outline:3px solid #f2a33a;out
     bubbles.push({el:c, x:OUTLET.x + (Math.random()*4-2), y:OUTLET.y, r, ph:Math.random()*6.28, vy:95 + Math.random()*40});
   }
   function interfaceY(){ return lerp(158, 412, st.progress); }
+  // Das Gas im Auffangglas verdrängt Wasser in die Wanne: Der Wasserstand steigt leicht.
+  // Wird das Glas herausgenommen, sinkt er wieder.
+  function troughY(){
+    const inWater = st.closed ? Math.max(0, Math.min(1, 1 + st.ctYc/70)) : 1;
+    return 330 - 14*st.progress*inWater;
+  }
 
   function updateBubbles(dt){
     const ctIn = Math.abs(st.ctXc - CT_OVER) < 20 && st.ctYc > -5;
-    const top = ctIn ? interfaceY() : 331;
+    const top = ctIn ? interfaceY() : troughY() + 1;
     bubbles = bubbles.filter(b => {
       b.y -= b.vy*dt; b.ph += dt*7;
       const x = b.x + Math.sin(b.ph)*1.6;
@@ -698,6 +713,9 @@ button:focus-visible,[role="button"]:focus-visible{outline:3px solid #f2a33a;out
     const iy = interfaceY();
     ctWater.setAttribute('y', iy.toFixed(1)); ctWater.setAttribute('height', (446 - iy).toFixed(1));
     ctMen.setAttribute('y', (iy - 1).toFixed(1));
+    const ty = troughY();
+    $('trWater').setAttribute('y', ty.toFixed(1)); $('trWater').setAttribute('height', (467 - ty).toFixed(1));
+    $('trLine').setAttribute('y1', ty.toFixed(1)); $('trLine').setAttribute('y2', ty.toFixed(1));
 
     requestAnimationFrame(tick);
   }
